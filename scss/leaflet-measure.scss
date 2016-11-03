@@ -42,8 +42,8 @@ $color-lightertext: #999;
   }
   .tasks {
     margin: 12px 0 0;
-    padding: 10px 0 0;
-    border-top: solid 1px $color-divider;
+    //padding: 10px 0 0; //gets rid of extra divider
+    //border-top: solid 1px $color-divider;
 
     list-style: none;
     list-style-image: none;
