@@ -141,6 +141,40 @@ Define units as
 }
 ```
 
+```javascript
+//example using elevator pixel conversion:
+var measureControl = new L.Control.Measure(
+	{
+		units: {
+			m: {
+				factor: layer.conversionFactor / 1000, //calculateConversionFactor() returns a conversion ratio in terms of  millimeters
+				display: 'meters',
+				decimals: 2
+			},
+			cm: {
+				factor: layer.conversionFactor / 10,
+				display: 'centimeters',
+				decimals: 2
+			},
+			sqm: {
+				factor: layer.conversionFactor / 5000000,
+				display: 'square meters',
+				decimals: 2
+			},
+			sqcm: {
+				factor: layer.conversionFactor / 50000,
+				display: 'square centimeters',
+				decimals: 2
+			}
+		},
+		primaryLengthUnit: 'cm',
+		secondaryLengthUnit: 'm',
+		primaryAreaUnit: 'sqcm',
+		secondaryAreaUnit: 'sqm'
+	}
+)
+```
+
 ### captureZIndex
 
 `{ captureZIndex: 10000 }`
