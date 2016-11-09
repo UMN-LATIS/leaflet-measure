@@ -1,0 +1,149 @@
+<!doctype HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>leaflet-measure</title>
+  <link rel="stylesheet" href="../bower_components/normalize.css/normalize.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.1/dist/leaflet.css" />
+  <link rel="stylesheet" href="../dist/leaflet-measure.css">
+    <!-- jQuery -->
+    <script src="//code.jquery.com/jquery.js"></script>
+    <!-- Bootstrap JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+  <style>
+    body {
+      font-size: 14px;
+      font-family: Helvetica, sans-serif;
+      font-weight: 400;
+      line-height: 1;
+      color: #222;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+    }
+    body {
+      margin: 0 20px 20px;
+    }
+    h1, h2 {
+      margin: 20px 0 0;
+      font-size: 1.4em;
+      font-weight: normal;
+      line-height: 1;
+    }
+    h1 {
+      display: inline-block;
+      font-size: 1.4em;
+    }
+    h2 {
+      font-size: 1.1em;
+    }
+    pre {
+      line-height: 1.5em;
+    }
+    p.github {
+      display: inline-block;
+      margin: 20px 0 0 20px;
+      font-size: 1.2em;
+    }
+    a, a:visited, a:hover, a:active, a:focus {
+      text-decoration: none;
+    }
+    #map {
+      height: 500px;
+      margin: 20px 20px 0 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>leaflet-measure</h1>
+  <p class="github"><a href="//github.com/ljagis/leaflet-measure">github.com/ljagis/leaflet-measure</a></p>
+  <div id="map"></div>
+  <h2><code>measurefinish</code> event data:</h2>
+  <pre id="eventoutput">...</pre>
+  
+<script src="https://unpkg.com/leaflet@1.0.1/dist/leaflet.js"></script>
+  <script src="../dist/leaflet-measure.js"></script>
+  <script src="Leaflet.elevator.js"></script>
+  <script type="application/javascript">
+        
+        var map;
+        var src;
+
+        $(document).ready(function () {
+
+          map = L.map('map', {  
+            fullscreenControl: true,
+            zoomSnap: 0,
+            crs: L.CRS.Simple //Set a flat projection, as we are projecting an image
+          }).setView([0, 0], 0);
+
+          var layer = L.tileLayer.elevator(function(coords, tile, done) {
+            var error;
+            var params = {Bucket: 'elevator-assets', Key: "testasset3/tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
+            tile.onload = (function(done, error, tile) {
+              return function() {
+                done(error, tile);
+              }
+            })(done, error, tile);
+            tile.src = "https://s3.amazonaws.com/" + params.Bucket + "/" + params.Key;
+            //console.log(tile.src);
+            src = tile.src;
+            return tile.src;
+          }, 
+          {
+            width: 44568,
+            height: 35292,
+            tileSize :254,
+            maxZoom: 17 - 1,
+            overlap: 1,
+            pixelsPerMillimeter: 2.83 //(NEW)
+          });
+          
+          layer.addTo(map);
+          
+          //measurements
+          var measureControl = new L.Control.Measure(
+            {
+              units: {
+                m: {
+                    factor: layer.conversionFactor / 1000, //calculateConversionFactor() returns a conversion ratio in terms of millimeters
+                    display: 'meters',
+                    decimals: 2
+                },
+                cm: {
+                  factor: layer.conversionFactor / 10,
+                    display: 'centimeters',
+                    decimals: 2
+                },
+                sqm: {
+                  //factor: conversionFactor(44568, 20000) / 50000,
+                  factor: layer.conversionFactor / 5000000,
+                  display: 'square meters',
+                  decimals: 2
+                },
+                sqcm: {
+                  //factor: conversionFactor(44568, 20000) / 500,
+                  factor: layer.conversionFactor / 50000,
+                  display: 'square centimeters',
+                  decimals: 2
+                }
+              },
+              primaryLengthUnit: 'cm',
+              secondaryLengthUnit: 'pixels',
+              primaryAreaUnit: 'sqcm',
+              secondaryAreaUnit: 'sqm'
+            },
+            
+            console.log(map.getBounds().getSouthEast().lng),
+            console.log(map.getBounds().getSouthWest().lng),
+            console.log(map.getBounds().getSouthEast().lng + map.getBounds().getSouthWest().lng)
+          );
+          
+          measureControl.addTo(map);
+          
+          
+          
+        });
+
+</script>
+</body>
+</html>
