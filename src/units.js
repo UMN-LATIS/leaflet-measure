@@ -8,6 +8,11 @@ module.exports = {
     display: 'acres',
     decimals: 2
   },
+  pixels: {
+    factor: 1,
+    display: 'pixels',
+    decimals: 0
+  },
   feet: {
     factor: 3.2808,
     display: 'feet',

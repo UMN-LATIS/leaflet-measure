@@ -44,7 +44,7 @@ L.Control.Measure = L.Control.extend({
     units: {},
     position: 'topright',
     primaryLengthUnit: 'feet',
-    secondaryLengthUnit: 'miles',
+    secondaryLengthUnit: 'pixels',
     primaryAreaUnit: 'acres',
     activeColor: '#ABE67E',     // base color for map features while actively measuring
     completedColor: '#C8F2BE',  // base color for permenant features generated from completed measure
@@ -63,6 +63,7 @@ L.Control.Measure = L.Control.extend({
   onAdd: function (map) {
     this._map = map;
     this._latlngs = [];
+    this._pixelPos = [];
     this._initLayout();
     map.on('click', this._collapse, this);
     this._layer = L.layerGroup().addTo(map);
@@ -221,6 +222,7 @@ L.Control.Measure = L.Control.extend({
   // clear all running measure data
   _clearMeasure: function () {
     this._latlngs = [];
+    this._pixelPos = [];
     this._resultsModel = null;
     this._measureVertexes.clearLayers();
     if (this._measureDrag) {
@@ -278,7 +280,25 @@ L.Control.Measure = L.Control.extend({
   // update results area of dom with calced measure from `this._latlngs`
   _updateResults: function () {
     var calced = calc.measure(this._latlngs);
-    var resultsModel = this._resultsModel = _.extend({}, calced, this._getMeasurementDisplayStrings(calced), {
+    // console.log(calced);
+    if (this._pixelPos.length < 2) {
+      return;
+    }
+    calced = this._pixelPos[1][0] - this._pixelPos[0][0];
+    var maxZooms = this._pixelPos[0][3] - this._pixelPos[0][2];
+    var measurement = {};
+    if (maxZooms > 0) {
+      measurement.length = calced * 2 * maxZooms;
+    } else {
+      measurement.length = calced;
+    }
+
+    if (L.Browser.retina) {
+      measurement.length = measurement.length * 2;
+    }
+    measurement.area = calced.area;
+    // console.log(calced);
+    var resultsModel = this._resultsModel = _.extend({}, measurement, this._getMeasurementDisplayStrings(measurement), {
       pointCount: this._latlngs.length
     });
     this.$results.innerHTML = resultsTemplate({
@@ -301,9 +321,9 @@ L.Control.Measure = L.Control.extend({
   // do final calc and finish out current measure, clear dom and internal state, add permanent map features
   _handleMeasureDoubleClick: function () {
     var latlngs = this._latlngs, calced, resultFeature, popupContainer, popupContent, zoomLink, deleteLink;
-
+    var pixelPos = this._pixelPos;
     this._finishMeasure();
-
+    var measurement = {};
     if (!latlngs.length) {
       return;
     }
@@ -313,7 +333,6 @@ L.Control.Measure = L.Control.extend({
     }
 
     calced = calc.measure(latlngs);
-
     if (latlngs.length === 1) {
       resultFeature = L.circleMarker(latlngs[0], this._symbols.getSymbol('resultPoint'));
       popupContent = pointPopupTemplate({
@@ -322,9 +341,21 @@ L.Control.Measure = L.Control.extend({
         i18n: i18n
       });
     } else if (latlngs.length === 2) {
+      var calcedNew = pixelPos[1][0] - pixelPos[0][0];
+      var maxZooms = pixelPos[0][3] - pixelPos[0][2];
+      if (maxZooms > 0) {
+        measurement.length = calcedNew * 2 * maxZooms;
+      } else {
+        measurement.length = calcedNew;
+      }
+
+      if (L.Browser.retina) {
+        measurement.length = measurement.length * 2;
+      }
+      measurement.area = calced.area;
       resultFeature = L.polyline(latlngs, this._symbols.getSymbol('resultLine'));
       popupContent = linePopupTemplate({
-        model: _.extend({}, calced, this._getMeasurementDisplayStrings(calced)),
+        model: _.extend({}, measurement, this._getMeasurementDisplayStrings(measurement)),
         humanize: humanize,
         i18n: i18n
       });
@@ -368,11 +399,12 @@ L.Control.Measure = L.Control.extend({
   // add new clicked point, update measure layers and results ui
   _handleMeasureClick: function (evt) {
     var latlng = this._map.mouseEventToLatLng(evt.originalEvent), // get actual latlng instead of the marker's latlng from originalEvent
-      lastClick = _.last(this._latlngs),
+      lastClick = _.last(this._latlng),
       vertexSymbol = this._symbols.getSymbol('measureVertex');
-
+    var pixelPos = [evt.originalEvent.layerX, evt.originalEvent.layerY, evt.target._map._zoom, evt.target._map._layersMaxZoom];
     if (!lastClick || !latlng.equals(lastClick)) { // skip if same point as last click, happens on `dblclick`
       this._latlngs.push(latlng);
+      this._pixelPos.push(pixelPos);
       this._addMeasureArea(this._latlngs);
       this._addMeasureBoundary(this._latlngs);
 
