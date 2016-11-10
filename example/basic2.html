@@ -100,29 +100,40 @@
           
           layer.addTo(map);
           
+          $(map._container).on('click', function(e) {
+            console.log('x, y', e.originalEvent.layerX, e.originalEvent.layerY);
+            console.log('container point', map.mouseEventToContainerPoint(e));
+            console.log('layer point', map.mouseEventToLayerPoint(e));
+            console.log('zoom', map._zoom);
+            
+            var pixelPoint = map.project(map.mouseEventToLatLng(e), map.getMaxZoom()).floor().x
+            
+            console.log('pixelPoint', pixelPoint);
+          })
+          
           //measurements
           var measureControl = new L.Control.Measure(
             {
               units: {
                 m: {
-                    factor: layer.conversionFactor / 1000, //calculateConversionFactor() returns a conversion ratio in terms of millimeters
+                    factor: (1 / layer.conversionFactor) / 1000, //calculateConversionFactor() returns a conversion ratio in terms of millimeters
                     display: 'meters',
                     decimals: 2
                 },
                 cm: {
-                  factor: layer.conversionFactor / 10,
+                  factor: (1 / layer.conversionFactor) / 10,
                     display: 'centimeters',
                     decimals: 2
                 },
                 sqm: {
                   //factor: conversionFactor(44568, 20000) / 50000,
-                  factor: layer.conversionFactor / 5000000,
+                  factor: (1 / layer.conversionFactor) / 50000,
                   display: 'square meters',
                   decimals: 2
                 },
                 sqcm: {
                   //factor: conversionFactor(44568, 20000) / 500,
-                  factor: layer.conversionFactor / 50000,
+                  factor: (1 / layer.conversionFactor) / 500,
                   display: 'square centimeters',
                   decimals: 2
                 }

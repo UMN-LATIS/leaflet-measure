@@ -341,13 +341,15 @@ L.Control.Measure = L.Control.extend({
         i18n: i18n
       });
     } else if (latlngs.length === 2) {
-      var calcedNew = pixelPos[1][0] - pixelPos[0][0];
+      measurement.length = Math.sqrt(Math.pow(pixelPos[1][0] - pixelPos[0][0], 2) + Math.pow(pixelPos[1][1] - pixelPos[0][1], 2)); //[evt.target._map.project(latlng, evt.target._map.getMaxZoom()).floor().x, evt.target._map.project(latlng, evt.target._map.getMaxZoom()).floor().y];
+      /*
       var maxZooms = pixelPos[0][3] - pixelPos[0][2];
       if (maxZooms > 0) {
         measurement.length = calcedNew * 2 * maxZooms;
       } else {
         measurement.length = calcedNew;
       }
+      */
 
       if (L.Browser.retina) {
         measurement.length = measurement.length * 2;
@@ -401,7 +403,8 @@ L.Control.Measure = L.Control.extend({
     var latlng = this._map.mouseEventToLatLng(evt.originalEvent), // get actual latlng instead of the marker's latlng from originalEvent
       lastClick = _.last(this._latlng),
       vertexSymbol = this._symbols.getSymbol('measureVertex');
-    var pixelPos = [evt.originalEvent.layerX, evt.originalEvent.layerY, evt.target._map._zoom, evt.target._map._layersMaxZoom];
+    ///var pixelPos = [evt.originalEvent.layerX, evt.originalEvent.layerY, evt.target._map._zoom, evt.target._map._layersMaxZoom];
+    var pixelPos = [evt.target._map.project(latlng, evt.target._map.getMaxZoom()).floor().x, evt.target._map.project(latlng, evt.target._map.getMaxZoom()).floor().y]; //lat lng in terms of absolute pixel units
     if (!lastClick || !latlng.equals(lastClick)) { // skip if same point as last click, happens on `dblclick`
       this._latlngs.push(latlng);
       this._pixelPos.push(pixelPos);
