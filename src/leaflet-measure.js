@@ -279,28 +279,22 @@ L.Control.Measure = L.Control.extend({
   },
   // update results area of dom with calced measure from `this._latlngs`
   _updateResults: function () {
-    var calced = calc.measure(this._latlngs);
+    var originalCalced = calc.measure(this._latlngs);
     // console.log(calced);
+
     if (this._pixelPos.length < 2) {
       return;
     }
-    calced = this._pixelPos[1][0] - this._pixelPos[0][0];
-    var maxZooms = this._pixelPos[0][3] - this._pixelPos[0][2];
+    var calced = Math.abs(Math.sqrt(Math.pow(this._pixelPos[1][0] - this._pixelPos[0][0], 2) + Math.pow(this._pixelPos[1][1] - this._pixelPos[0][1], 2)));
     var measurement = {};
-    if (maxZooms > 0) {
-      measurement.length = calced * 2 * maxZooms;
-    } else {
-      measurement.length = calced;
-    }
-
-    if (L.Browser.retina) {
-      measurement.length = measurement.length * 2;
-    }
-    measurement.area = calced.area;
+    measurement.length = calced;
+    // measurement.area = calced.area;
+    originalCalced.length = measurement.length;
     // console.log(calced);
-    var resultsModel = this._resultsModel = _.extend({}, measurement, this._getMeasurementDisplayStrings(measurement), {
+    var resultsModel = this._resultsModel = _.extend({}, originalCalced, this._getMeasurementDisplayStrings(measurement), {
       pointCount: this._latlngs.length
     });
+    console.log(resultsModel);
     this.$results.innerHTML = resultsTemplate({
       model: resultsModel,
       humanize: humanize,
@@ -341,23 +335,12 @@ L.Control.Measure = L.Control.extend({
         i18n: i18n
       });
     } else if (latlngs.length === 2) {
-      measurement.length = Math.sqrt(Math.pow(pixelPos[1][0] - pixelPos[0][0], 2) + Math.pow(pixelPos[1][1] - pixelPos[0][1], 2)); //[evt.target._map.project(latlng, evt.target._map.getMaxZoom()).floor().x, evt.target._map.project(latlng, evt.target._map.getMaxZoom()).floor().y];
-      /*
-      var maxZooms = pixelPos[0][3] - pixelPos[0][2];
-      if (maxZooms > 0) {
-        measurement.length = calcedNew * 2 * maxZooms;
-      } else {
-        measurement.length = calcedNew;
-      }
-      */
+      measurement.length = Math.abs(Math.sqrt(Math.pow(pixelPos[1][0] - pixelPos[0][0], 2) + Math.pow(pixelPos[1][1] - pixelPos[0][1], 2)));
 
-      if (L.Browser.retina) {
-        measurement.length = measurement.length * 2;
-      }
-      measurement.area = calced.area;
+      calced.length = measurement.length;
       resultFeature = L.polyline(latlngs, this._symbols.getSymbol('resultLine'));
       popupContent = linePopupTemplate({
-        model: _.extend({}, measurement, this._getMeasurementDisplayStrings(measurement)),
+        model: _.extend({}, calced, this._getMeasurementDisplayStrings(measurement)),
         humanize: humanize,
         i18n: i18n
       });
