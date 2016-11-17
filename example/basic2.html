@@ -116,7 +116,7 @@
             {
               units: {
                 m: {
-                    factor: (1 / layer.conversionFactor) / 1000, //calculateConversionFactor() returns a conversion ratio in terms of millimeters
+                    factor: (1 / layer.conversionFactor) / 1000, //layer.conversionFactor is the same as calling layer.options.pixelsPerMillimeter
                     display: 'meters',
                     decimals: 2
                 },
@@ -127,13 +127,13 @@
                 },
                 sqm: {
                   //factor: conversionFactor(44568, 20000) / 50000,
-                  factor: (1 / layer.conversionFactor) / 50000,
+                  factor: (1 / Math.pow(layer.conversionFactor, 2)) / 1000,
                   display: 'square meters',
                   decimals: 2
                 },
                 sqcm: {
                   //factor: conversionFactor(44568, 20000) / 500,
-                  factor: (1 / layer.conversionFactor) / 500,
+                  factor: (1 / Math.pow(layer.conversionFactor, 2)) / 100, 
                   display: 'square centimeters',
                   decimals: 2
                 }

@@ -44,15 +44,6 @@ L.TileLayer.Elevator = L.TileLayer.extend({
 		return outputSize;
     },
 
-   
-_calculateConversionFactor: function() {
-    //var radWidth = (this._map.getBounds().getSouthEast().lng + this._map.getBounds().getSouthWest().lng) * (Math.PI / 180); //difference in width in terms of radians
-	
-	this.conversionFactor = this.options.pixelsPerMillimeter;
-	//this.conversionFactor = ( ( (this.options.width / this.options.pixelsPerMillimeter) * 1000 ) / (6371e3 * 2 * Math.atan2( Math.sin(radWidth / 2), Math.sqrt( 1 - Math.pow( Math.sin(radWidth / 2), 2) ) ) ) ) / 1000; //width in meters / map meters, converted to mm
-},
-
-
 _computeImageAndGridSize: function () { // thanks https://github.com/turban/Leaflet.Zoomify
 	var options = this.options,
 	tileSize = options.tileSize || 256
@@ -114,8 +105,8 @@ onAdd: function (map) {
 	this.adjustAttribution()
 	map.options.maxBoundsViscosity = 0.8
 	L.TileLayer.prototype.onAdd.call(this, map);
-	this.fitImage()
-	this._calculateConversionFactor();
+	this.fitImage();
+	
 
 	map.on('resize', self._mapResized.bind(self))
 },
